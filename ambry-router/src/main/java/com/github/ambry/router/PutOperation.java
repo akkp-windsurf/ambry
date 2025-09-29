@@ -1727,7 +1727,8 @@ class PutOperation {
         if (QuotaUtils.postProcessCharge(quotaChargeCallback) && !(this instanceof MetadataPutChunk)
             && chunkException == null) {
           try {
-            quotaChargeCallback.checkAndCharge(false, true, chunkBlobProperties.getBlobSize());
+            long sizeToCharge = (getNumDataChunks() > 1) ? getBlobSize() : chunkBlobProperties.getBlobSize();
+            quotaChargeCallback.checkAndCharge(false, true, sizeToCharge);
           } catch (QuotaException quotaException) {
             // For now we only log for quota charge exceptions for in progress requests.
             logger.info("{}: Exception {} while handling quota charge event", loggingContext,
@@ -2293,8 +2294,9 @@ class PutOperation {
      * for sending if this blob is composite, or marking the operation complete if this is a simple blob.
      */
     private void finalizeMetadataChunk() {
+      long totalBlobSize = getBlobSize();
       finalBlobProperties =
-          new BlobProperties(getBlobSize(), passedInBlobProperties.getServiceId(), passedInBlobProperties.getOwnerId(),
+          new BlobProperties(totalBlobSize, passedInBlobProperties.getServiceId(), passedInBlobProperties.getOwnerId(),
               passedInBlobProperties.getContentType(), passedInBlobProperties.isPrivate(),
               passedInBlobProperties.getTimeToLiveInSeconds(), passedInBlobProperties.getCreationTimeInMs(),
               passedInBlobProperties.getAccountId(), passedInBlobProperties.getContainerId(),

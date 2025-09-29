@@ -104,13 +104,18 @@ public class OperationQuotaCharger implements Chargeable {
       return null;
     }
     try {
-      return quotaChargeCallback.getQuotaResource();
+      QuotaResource resource = quotaChargeCallback.getQuotaResource();
+      if (resource == null) {
+        LOGGER.warn("QuotaResource is null for operation: {} with blobId: {}. This may indicate missing account/container headers.", 
+            operationName, getBlobIdStr());
+      }
+      return resource;
     } catch (Exception exception) {
       if (!(exception instanceof QuotaException)) {
         routerMetrics.unknownExceptionInChargeableRate.mark();
       }
       LOGGER.error(
-          "Could not create QuotaResource object during {} operation for the chunk {} due to {}. This should never happen.",
+          "Could not create QuotaResource object during {} operation for the chunk {} due to {}. Check account/container headers are properly set.",
           operationName, getBlobIdStr(), exception.toString());
     }
     // A null return means quota resource could not be created for this chunk. The consumer should decide how to handle nulls.

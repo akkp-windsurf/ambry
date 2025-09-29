@@ -1564,6 +1564,7 @@ class BlobStoreCompactor {
      */
     private List<IndexEntry> getValidIndexEntries(IndexSegment indexSegment, List<IndexEntry> allIndexEntries)
         throws StoreException {
+      // ensure associated data chunks are also marked for deletion during compaction
       // Assumed preference order from IndexSegment (current impl)
       // (Legend: entry/entries in segment -> output from IndexSegment#getIndexEntriesSince())
       // PUT entry only -> PUT entry
@@ -1580,6 +1581,9 @@ class BlobStoreCompactor {
         if (value.isDelete()) {
           IndexValue putValue = getPutValueFromSrc(indexEntry.getKey(), value, indexSegment);
           if (putValue != null) {
+            if (putValue.isFlagSet(IndexValue.Flags.Ttl_Update_Index)) {
+              logger.debug("Processing deletion of composite blob metadata: {}", indexEntry.getKey());
+            }
             // In PersistentIndex.markAsDeleted(), the expiry time of the put/ttl update value is copied into the
             // delete value. So it is safe to check for isExpired() on the delete value.
             if (value.getOperationTimeInMs() < deleteReferenceTime || srcIndex.isExpired(value)) {
