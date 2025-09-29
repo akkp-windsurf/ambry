@@ -277,6 +277,7 @@ project(':ambry-messageformat') {
         implementation "org.json:json:$jsonVersion"
         implementation "commons-codec:commons-codec:$commonsVersion"
         testImplementation project(':ambry-test-utils')
+        testImplementation project(':ambry-commons')
         testImplementation project(path: ':ambry-api', configuration: 'testArchives')
     }
 }
