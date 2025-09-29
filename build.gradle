@@ -550,6 +550,8 @@ project(':ambry-protocol') {
         implementation "commons-codec:commons-codec:$commonsVersion"
         implementation "com.google.code.findbugs:jsr305:$jsr305Version"
         testImplementation project(':ambry-test-utils')
+        testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+        testImplementation "org.apache.commons:commons-math3:3.6.1"
     }
 }
 
