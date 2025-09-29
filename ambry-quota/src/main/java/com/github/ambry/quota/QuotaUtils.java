@@ -106,8 +106,9 @@ public class QuotaUtils {
 
   /**
    * Calculate the storage cost incurred to serve a request.
+   * For composite blobs, this should be called with the total blob size, not individual chunk sizes.
    * @param restRequest {@link RestRequest} to find type of request.
-   * @param size size of the blob or chunk.
+   * @param size size of the blob or chunk. For composite blobs, this should be the total blob size.
    * @return storage cost.
    */
   public static double calculateStorageCost(RestRequest restRequest, long size) {

@@ -1,0 +1,7 @@
+# Required configuration for proper large file handling:
+# routerReservedMetadataEnabled = true
+# routerMaxPutChunkSizeBytes = appropriate value for large files
+# routerMaxInMemPutChunks = sufficient for composite blob operations
+
+# These settings ensure proper metadata tracking and composite blob operations
+# for large file uploads that trigger automatic chunking.

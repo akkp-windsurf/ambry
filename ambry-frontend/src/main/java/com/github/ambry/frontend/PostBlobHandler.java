@@ -363,6 +363,10 @@ class PostBlobHandler {
         if (chunkTtl <= 0 || chunkTtl > frontendConfig.chunkUploadMaxChunkTtlSecs) {
           throw new RestServiceException("Invalid chunk upload TTL: " + chunkTtl, RestServiceErrorCode.InvalidArgs);
         }
+        if (blobProperties.getAccountId() == -1 || blobProperties.getContainerId() == -1) {
+          throw new RestServiceException("Account and container IDs must be properly set for chunk uploads", 
+              RestServiceErrorCode.BadRequest);
+        }
       }
     }
 
