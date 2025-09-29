@@ -375,6 +375,8 @@ project(':ambry-network') {
         implementation "commons-codec:commons-codec:$commonsVersion"
         implementation "com.google.code.findbugs:jsr305:$jsr305Version"
         testImplementation project(':ambry-test-utils')
+        testImplementation "org.conscrypt:conscrypt-openjdk-uber:2.5.2"
+        testImplementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
     }
 }
 
