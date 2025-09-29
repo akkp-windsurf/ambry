@@ -331,7 +331,7 @@ project(':ambry-account') {
         implementation "io.dropwizard.metrics:metrics-core:$metricsVersion"
         implementation "org.json:json:$jsonVersion"
         testImplementation project(':ambry-test-utils')
-        testImplementation project(':ambry-api')
+        testImplementation project(path: ':ambry-api', configuration: 'testArchives')
         testImplementation project(path: ':ambry-clustermap', configuration: 'testArchives')
         testImplementation "com.google.jimfs:jimfs:$jimFsVersion"
     }
