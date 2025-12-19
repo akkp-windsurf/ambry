@@ -1,0 +1,91 @@
+# Dockerfile for Ambry Server Component
+# Main-Class: com.github.ambry.server.AmbryMain
+
+# =============================================================================
+# Build Stage
+# =============================================================================
+FROM gradle:8-jdk11 AS builder
+
+WORKDIR /app
+
+# Copy gradle wrapper and build files first for better caching
+COPY gradlew gradlew.bat ./
+COPY gradle/ gradle/
+COPY build.gradle settings.gradle gradle.properties version.properties ./
+
+# Copy source code
+COPY ambry-account/ ambry-account/
+COPY ambry-api/ ambry-api/
+COPY ambry-cloud/ ambry-cloud/
+COPY ambry-clustermap/ ambry-clustermap/
+COPY ambry-commons/ ambry-commons/
+COPY ambry-file-transfer/ ambry-file-transfer/
+COPY ambry-filesystem/ ambry-filesystem/
+COPY ambry-frontend/ ambry-frontend/
+COPY ambry-messageformat/ ambry-messageformat/
+COPY ambry-mysql/ ambry-mysql/
+COPY ambry-named-mysql/ ambry-named-mysql/
+COPY ambry-network/ ambry-network/
+COPY ambry-prioritization/ ambry-prioritization/
+COPY ambry-protocol/ ambry-protocol/
+COPY ambry-quota/ ambry-quota/
+COPY ambry-replication/ ambry-replication/
+COPY ambry-rest/ ambry-rest/
+COPY ambry-router/ ambry-router/
+COPY ambry-server/ ambry-server/
+COPY ambry-store/ ambry-store/
+COPY ambry-test-utils/ ambry-test-utils/
+COPY ambry-tools/ ambry-tools/
+COPY ambry-utils/ ambry-utils/
+COPY ambry-vcr/ ambry-vcr/
+COPY ambry-all/ ambry-all/
+COPY log4j-test-config/ log4j-test-config/
+
+# Build the server uber JAR (skip tests for faster builds)
+RUN ./gradlew allJar -x test --no-daemon
+
+# =============================================================================
+# Runtime Stage
+# =============================================================================
+FROM openjdk:11-jre-slim
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN groupadd -r ambry && useradd -r -g ambry ambry
+
+WORKDIR /opt/ambry
+
+# Copy built JAR from builder stage
+COPY --from=builder /app/target/ambry.jar ./ambry.jar
+
+# Copy configuration files
+COPY config/ ./config/
+
+# Create logs and data directories
+RUN mkdir -p logs data && chown -R ambry:ambry /opt/ambry
+
+# Switch to non-root user
+USER ambry
+
+# Environment variables with defaults
+ENV JAVA_OPTS="-Xmx4g -Xms1g"
+ENV LOG4J_CONFIG="/opt/ambry/config/log4j2.xml"
+ENV SERVER_PROPS="/opt/ambry/config/server.properties"
+ENV HARDWARE_LAYOUT="/opt/ambry/config/HardwareLayout.json"
+ENV PARTITION_LAYOUT="/opt/ambry/config/PartitionLayout.json"
+
+# Health check for server
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:6667/healthCheck || exit 1
+
+# Expose server ports
+# 6667 - Main server port
+# 6668 - SSL port
+EXPOSE 6667 6668
+
+# Entrypoint for AmbryServer
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dlog4j2.configurationFile=file:$LOG4J_CONFIG -jar ambry.jar --serverPropsFilePath $SERVER_PROPS --hardwareLayoutFilePath $HARDWARE_LAYOUT --partitionLayoutFilePath $PARTITION_LAYOUT"]

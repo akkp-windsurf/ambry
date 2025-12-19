@@ -1,0 +1,40 @@
+#
+# Copyright (C) 2014-2016 LinkedIn Corp. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+# this file except in compliance with the License. You may obtain a copy of the
+# License at  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied.
+#
+
+# Docker configuration template for Ambry Server
+# Environment variables are substituted at container startup
+
+# Host configuration
+host.name=${AMBRY_HOST_NAME:-localhost}
+
+# Cluster map configuration
+clustermap.cluster.name=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+clustermap.datacenter.name=${AMBRY_DATACENTER_NAME:-Datacenter}
+clustermap.host.name=${AMBRY_HOST_NAME:-localhost}
+clustermap.port=${AMBRY_PORT:-6667}
+
+# Server HTTP2 configuration
+rest.server.rest.request.service.factory=com.github.ambry.server.StorageRestRequestService
+rest.server.nio.server.factory=com.github.ambry.rest.StorageServerNettyFactory
+ssl.client.authentication=none
+
+# Replication configuration
+replication.token.flush.interval.seconds=${AMBRY_REPLICATION_TOKEN_FLUSH_INTERVAL:-300}
+replication.token.flush.delay.seconds=${AMBRY_REPLICATION_TOKEN_FLUSH_DELAY:-5}
+
+# Store configuration
+store.data.flush.interval.seconds=${AMBRY_STORE_DATA_FLUSH_INTERVAL:-60}
+store.data.flush.delay.seconds=${AMBRY_STORE_DATA_FLUSH_DELAY:-5}
+
+# Network configuration
+network.selector.io.threads=${AMBRY_NETWORK_IO_THREADS:-4}
+network.selector.max.connections.per.port.plain.text=${AMBRY_MAX_CONNECTIONS:-500}

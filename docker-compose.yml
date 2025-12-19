@@ -1,0 +1,125 @@
+# Docker Compose configuration for Ambry
+# Production-like local deployment
+
+version: '3.8'
+
+services:
+  # Ambry Server - Main storage server
+  ambry-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ambry-server
+    hostname: ambry-server
+    ports:
+      - "6667:6667"   # Main server port
+      - "6668:6668"   # SSL port
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ambry-server-data:/opt/ambry/data
+      - ambry-server-logs:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms1g
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/server.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-ambry-server}
+      - AMBRY_PORT=${AMBRY_PORT:-6667}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+    networks:
+      - ambry-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6667/healthCheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Ambry VCR - Virtual Cloud Replica
+  ambry-vcr:
+    build:
+      context: .
+      dockerfile: Dockerfile.vcr
+    container_name: ambry-vcr
+    hostname: ambry-vcr
+    ports:
+      - "6669:6667"   # VCR server port (mapped to different host port)
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ambry-vcr-logs:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms1g
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/server.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-ambry-vcr}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+    networks:
+      - ambry-network
+    depends_on:
+      ambry-server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6667/healthCheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Ambry Frontend - REST API frontend
+  ambry-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ambry-frontend
+    hostname: ambry-frontend
+    ports:
+      - "1174:1174"   # HTTP port
+      - "1175:1175"   # SSL port
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ambry-frontend-logs:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/frontend.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-ambry-frontend}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+    networks:
+      - ambry-network
+    depends_on:
+      ambry-server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1174/healthCheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  ambry-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  ambry-server-data:
+    driver: local
+  ambry-server-logs:
+    driver: local
+  ambry-vcr-logs:
+    driver: local
+  ambry-frontend-logs:
+    driver: local
