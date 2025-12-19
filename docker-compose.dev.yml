@@ -1,0 +1,111 @@
+# Docker Compose configuration for Ambry Development
+# Includes volume mounts for live code reloading and debugging ports
+
+version: '3.8'
+
+services:
+  # Ambry Server - Development mode
+  ambry-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ambry-server-dev
+    hostname: ambry-server-dev
+    ports:
+      - "6667:6667"   # Main server port
+      - "6668:6668"   # SSL port
+      - "5005:5005"   # Debug port
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ./target:/opt/ambry/target:ro
+      - ambry-server-data-dev:/opt/ambry/data
+      - ambry-server-logs-dev:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/server.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-localhost}
+      - AMBRY_PORT=${AMBRY_PORT:-6667}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+      - AMBRY_DEBUG=true
+    networks:
+      - ambry-network-dev
+    restart: "no"
+
+  # Ambry VCR - Development mode
+  ambry-vcr:
+    build:
+      context: .
+      dockerfile: Dockerfile.vcr
+    container_name: ambry-vcr-dev
+    hostname: ambry-vcr-dev
+    ports:
+      - "6669:6667"   # VCR server port
+      - "5006:5005"   # Debug port
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ./target:/opt/ambry/target:ro
+      - ambry-vcr-logs-dev:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/server.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-localhost}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+      - AMBRY_DEBUG=true
+    networks:
+      - ambry-network-dev
+    depends_on:
+      - ambry-server
+    restart: "no"
+
+  # Ambry Frontend - Development mode
+  ambry-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ambry-frontend-dev
+    hostname: ambry-frontend-dev
+    ports:
+      - "1174:1174"   # HTTP port
+      - "1175:1175"   # SSL port
+      - "5007:5005"   # Debug port
+    volumes:
+      - ./config:/opt/ambry/config:ro
+      - ./target:/opt/ambry/target:ro
+      - ambry-frontend-logs-dev:/opt/ambry/logs
+    environment:
+      - JAVA_OPTS=-Xmx1g -Xms256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - LOG4J_CONFIG=/opt/ambry/config/log4j2.xml
+      - SERVER_PROPS=/opt/ambry/config/frontend.properties
+      - HARDWARE_LAYOUT=/opt/ambry/config/HardwareLayout.json
+      - PARTITION_LAYOUT=/opt/ambry/config/PartitionLayout.json
+      - AMBRY_HOST_NAME=${AMBRY_HOST_NAME:-localhost}
+      - AMBRY_CLUSTER_NAME=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+      - AMBRY_DATACENTER_NAME=${AMBRY_DATACENTER_NAME:-Datacenter}
+      - AMBRY_DEBUG=true
+    networks:
+      - ambry-network-dev
+    depends_on:
+      - ambry-server
+    restart: "no"
+
+networks:
+  ambry-network-dev:
+    driver: bridge
+
+volumes:
+  ambry-server-data-dev:
+    driver: local
+  ambry-server-logs-dev:
+    driver: local
+  ambry-vcr-logs-dev:
+    driver: local
+  ambry-frontend-logs-dev:
+    driver: local

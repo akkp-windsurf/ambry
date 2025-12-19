@@ -1,0 +1,44 @@
+#
+# Copyright (C) 2014-2016 LinkedIn Corp. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+# this file except in compliance with the License. You may obtain a copy of the
+# License at  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied.
+#
+
+# Docker configuration template for Ambry Frontend
+# Environment variables are substituted at container startup
+
+# REST server configuration
+rest.server.rest.request.service.factory=com.github.ambry.frontend.FrontendRestRequestServiceFactory
+frontend.named.blob.db.factory=${AMBRY_NAMED_BLOB_DB_FACTORY:-com.github.ambry.commons.InMemNamedBlobDbFactory}
+
+# Router configuration
+router.hostname=${AMBRY_HOST_NAME:-localhost}
+router.datacenter.name=${AMBRY_DATACENTER_NAME:-Datacenter}
+router.enable.http2.network.client=${AMBRY_ROUTER_HTTP2_ENABLED:-true}
+router.put.success.target=${AMBRY_ROUTER_PUT_SUCCESS_TARGET:-1}
+router.delete.success.target=${AMBRY_ROUTER_DELETE_SUCCESS_TARGET:-1}
+router.ttl.update.success.target=${AMBRY_ROUTER_TTL_UPDATE_SUCCESS_TARGET:-1}
+
+# Metadata cache configuration
+router.blob.metadata.cache.enabled=${AMBRY_METADATA_CACHE_ENABLED:-true}
+router.blob.metadata.cache.id=${AMBRY_METADATA_CACHE_ID:-LocalhostMetadataCache}
+router.smallest.blob.for.metadata.cache=${AMBRY_SMALLEST_BLOB_FOR_CACHE:-16777216}
+
+# Cluster map configuration
+clustermap.cluster.name=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+clustermap.datacenter.name=${AMBRY_DATACENTER_NAME:-Datacenter}
+clustermap.host.name=${AMBRY_HOST_NAME:-localhost}
+clustermap.writable.partition.min.replica.count=${AMBRY_MIN_REPLICA_COUNT:-1}
+
+# KMS configuration
+kms.default.container.key=${AMBRY_KMS_KEY:-B374A26A71490437AA024E4FADD5B497FDFF1A8EA6FF12F6FB65AF2720B59CCF}
+
+# Frontend port configuration
+rest.server.rest.request.handler.port=${AMBRY_FRONTEND_PORT:-1174}
+rest.server.rest.request.handler.ssl.port=${AMBRY_FRONTEND_SSL_PORT:-1175}

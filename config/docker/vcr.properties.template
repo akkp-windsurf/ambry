@@ -1,0 +1,39 @@
+#
+# Copyright (C) 2019 LinkedIn Corp. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+# this file except in compliance with the License. You may obtain a copy of the
+# License at  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied.
+#
+
+# Docker configuration template for Ambry VCR (Virtual Cloud Replica)
+# Environment variables are substituted at container startup
+
+# Host configuration
+host.name=${AMBRY_HOST_NAME:-localhost}
+
+# Cluster map configuration
+clustermap.cluster.name=${AMBRY_CLUSTER_NAME:-Ambry_Dev}
+clustermap.datacenter.name=${AMBRY_DATACENTER_NAME:-Datacenter}
+clustermap.host.name=${AMBRY_HOST_NAME:-localhost}
+clustermap.port=${AMBRY_PORT:-6667}
+
+# VCR configuration
+vcr.cluster.name=${AMBRY_VCR_CLUSTER_NAME:-VcrCluster}
+vcr.ssl.port=${AMBRY_VCR_SSL_PORT:-6668}
+
+# Cloud configuration
+cloud.destination.factory.class=${AMBRY_CLOUD_DESTINATION_FACTORY:-com.github.ambry.cloud.azure.AzureCloudDestinationFactory}
+
+# Azure configuration (if using Azure)
+azure.storage.connection.string=${AZURE_STORAGE_CONNECTION_STRING:-}
+azure.cosmos.endpoint=${AZURE_COSMOS_ENDPOINT:-}
+azure.cosmos.database=${AZURE_COSMOS_DATABASE:-}
+azure.cosmos.collection=${AZURE_COSMOS_COLLECTION:-}
+
+# Replication configuration
+replication.cloud.token.factory=${AMBRY_CLOUD_TOKEN_FACTORY:-com.github.ambry.cloud.CloudTokenPersistor}

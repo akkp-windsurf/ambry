@@ -689,6 +689,31 @@ task allJarVcr(type: Jar, dependsOn: subprojects.assemble) {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
 
+// Docker build tasks
+task dockerBuildServer(type: Exec, dependsOn: allJar) {
+    description = 'Build Docker image for Ambry Server'
+    group = 'docker'
+    commandLine 'docker', 'build', '-f', 'Dockerfile.server', '-t', 'ambry/ambry-server:latest', '.'
+}
+
+task dockerBuildVcr(type: Exec, dependsOn: allJarVcr) {
+    description = 'Build Docker image for Ambry VCR'
+    group = 'docker'
+    commandLine 'docker', 'build', '-f', 'Dockerfile.vcr', '-t', 'ambry/ambry-vcr:latest', '.'
+}
+
+task dockerBuildFrontend(type: Exec, dependsOn: allJar) {
+    description = 'Build Docker image for Ambry Frontend'
+    group = 'docker'
+    commandLine 'docker', 'build', '-f', 'Dockerfile.frontend', '-t', 'ambry/ambry-frontend:latest', '.'
+}
+
+task dockerBuildAll {
+    description = 'Build all Docker images for Ambry'
+    group = 'docker'
+    dependsOn dockerBuildServer, dockerBuildVcr, dockerBuildFrontend
+}
+
 task codeCoverageReport(type: JacocoReport) {
     // This task will compile a report for whatever tests have been run.
     // Make sure to run the desired test tasks before generating the coverate report.
