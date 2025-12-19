@@ -47,7 +47,7 @@ RUN ./gradlew allJar allJarVcr -x test --no-daemon
 # =============================================================================
 # Runtime Stage
 # =============================================================================
-FROM openjdk:11-jre-slim AS runtime
+FROM eclipse-temurin:11-jre-jammy AS runtime
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
